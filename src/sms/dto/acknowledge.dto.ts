@@ -1,9 +1,5 @@
-import { IsString } from 'class-validator';
-
 export class AcknowledgeDto {
-  @IsString()
-  to: string;
-
-  @IsString()
-  message: string;
+  key: string;  // Unique identifier for the client
+  status: string;  // Status of the acknowledgment (e.g., 'delivered')
+  messageId: string;  // Unique message ID
 }

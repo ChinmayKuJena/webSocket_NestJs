@@ -1,9 +1,5 @@
-import { IsString } from 'class-validator';
-
 export class SendMessageDto {
-  @IsString()
+  key: string;  // Unique identifier for the client
   to: string;
-
-  @IsString()
   message: string;
 }

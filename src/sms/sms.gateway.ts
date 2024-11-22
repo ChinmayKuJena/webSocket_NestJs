@@ -1,41 +1,46 @@
-// import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-// import { Server } from 'socket.io';
-
-// @WebSocketGateway({ cors: true })
-// export class SmsGateway {
-//   @WebSocketServer()
-//   server: Server;
-
-//   broadcastEvent(event: string, payload: any) {
-//     this.server.emit(event, payload);
-//   }
-// }
-
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
-export class SmsGateway {
-  private readonly logger = new Logger(SmsGateway.name); // Instantiate the logger
-
+@WebSocketGateway({
+  cors: true,
+})
+export class SmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  // Method to broadcast events
-  broadcastEvent(event: string, payload: any) {
-    this.logger.log(`Broadcasting event: ${event} with payload: ${JSON.stringify(payload)}`);
-    this.server.emit(event, payload);
-    this.logger.log(`Event ${event} broadcasted successfully`);
-  }
-  
-  // Example: Method to handle client connections (optional)
-  onConnection(client: any) {
-    this.logger.log(`Client connected: ${client.id}`);
+  private readonly logger = new Logger(SmsGateway.name);
+
+  // Handle client connection
+  handleConnection(client: Socket) {
+    const clientKey = client.handshake.query.key;
+
+    if (!clientKey) {
+      this.logger.warn(`Client connection rejected: Missing key`);
+      client.disconnect();
+      return;
+    }
+
+    this.logger.log(`Client connected: ${client.id}, Key: ${clientKey}`);
+
+    client.join(clientKey);
+    this.logger.log(`Client ${client.id} joined room: ${clientKey}`);
+
   }
 
-  // Example: Method to handle client disconnections (optional)
-  onDisconnect(client: any) {
+  // handle client disconnection
+  handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+  }
+
+  // emit a message to a specific room (key)
+  sendMessageToKey(key: string, message: any) {
+    this.server.to(key).emit('custom:message', message);
+    this.logger.log(`Message sent to key ${key}: ${JSON.stringify(message)}`);
   }
 }
