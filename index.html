@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO WebSocket Client</title>
+  <script src="https://cdn.socket.io/4.4.0/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #messages {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+    }
+
+    .message {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .message:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Real-time SMS WebSocket Client</h1>
+  <div id="messages"></div>
+
+  <script>
+    // Connect to the WebSocket server running on your NestJS server
+    const socket = io('http://13.127.100.115:3000'); 
+    //const socket = io('http://localhost:3000'); 
+
+    // Event listener for incoming 'sms:send' events
+    socket.on('sms:send', (messageData) => {
+      console.log('Received message:', messageData);
+
+      // Create a new div to display the message
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      messageElement.innerHTML = `<strong>To: </strong>${messageData.to} <br> <strong>Message: </strong>${messageData.message}`;
+      
+      // Append the message to the #messages container
+      document.getElementById('messages').appendChild(messageElement);
+    });
+
+    // Event listener for incoming 'sms:acknowledge' events
+    socket.on('sms:acknowledge', (ackData) => {
+      console.log('Acknowledgment received:', ackData);
+
+      // Create a new div to display the acknowledgment
+      const ackElement = document.createElement('div');
+      ackElement.classList.add('message');
+      ackElement.innerHTML = `<strong>Acknowledgment: </strong>${ackData.status} <br> <strong>Data: </strong>${ackData.data}`;
+      
+      // Append the acknowledgment to the #messages container
+      document.getElementById('messages').appendChild(ackElement);
+    });
+  </script>
+
+</body>
+</html>
