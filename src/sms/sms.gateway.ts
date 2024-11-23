@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: true,
+  path: '/receive',
 })
 export class SmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
